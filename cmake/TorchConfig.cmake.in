@@ -167,4 +167,17 @@ if(TORCH_CXX_FLAGS)
   set_property(TARGET torch PROPERTY INTERFACE_COMPILE_OPTIONS "${TORCH_CXX_FLAGS}")
 endif()
 
-find_package_handle_standard_args(Torch DEFAULT_MSG TORCH_LIBRARY TORCH_INCLUDE_DIRS)
+# Find the torch_c library
+find_library(TORCH_C_LIBRARY torch_c PATHS "${TORCH_INSTALL_PREFIX}/lib")
+if(TORCH_C_LIBRARY)
+    add_library(torch_c SHARED IMPORTED)
+    set_target_properties(torch_c PROPERTIES
+        IMPORTED_LOCATION "${TORCH_C_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${TORCH_INCLUDE_DIRS}"
+    )
+    list(APPEND TORCH_LIBRARIES torch_c)
+else()
+    message(WARNING "torch_c library not found.")
+endif()
+
+find_package_handle_standard_args(Torch DEFAULT_MSG TORCH_LIBRARY TORCH_INCLUDE_DIRS TORCH_C_LIBRARY)

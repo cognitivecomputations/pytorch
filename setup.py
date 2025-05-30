@@ -988,14 +988,17 @@ def configure_extension_build():
     library_dirs.append(lib_path)
 
     main_compile_args = []
-    main_libraries = ["torch_python"]
+    # main_libraries will be set based on BUILD_LIBTORCH_WHL
+    main_libraries = []
 
     main_link_args = []
     main_sources = ["torch/csrc/stub.c"]
 
     if BUILD_LIBTORCH_WHL:
-        main_libraries = ["torch"]
+        main_libraries = ["torch", "torch_c"]
         main_sources = []
+    else:
+        main_libraries = ["torch_python", "torch_c"]
 
     if build_type.is_debug():
         if IS_WINDOWS:
@@ -1246,6 +1249,11 @@ def main():
         "utils/model_dump/skeleton.html",
         "utils/model_dump/code.js",
         "utils/model_dump/*.mjs",
+        "lib/torch_c.lib", # For Windows
+        "lib/torch_c.dll", # For Windows
+        "lib/libtorch_c.dylib", # For MacOS
+        "lib/libtorch_c.so", # For Linux
+        "include/torch/c/torch.h",
     ]
 
     if not BUILD_LIBTORCH_WHL:
