@@ -1,3 +1,73 @@
+# PyTorch C Bindings Fork
+
+**Author:** Eric Hartford, founder of Cognitive Computations and creator of Dolphin and Samantha models on Hugging Face.
+
+This fork of PyTorch is dedicated to implementing experimental C language bindings for the PyTorch library. The goal is to provide a minimal, stable C API that allows C applications to leverage PyTorch's tensor computations and neural network functionalities.
+
+## Building and Testing the C Bindings
+
+The C bindings are built as part of the standard PyTorch build process by enabling a CMake option.
+
+**Prerequisites:**
+- Ensure you have a C/C++ compiler (GCC, Clang, MSVC) and CMake installed.
+- Follow the general PyTorch build prerequisites for your platform (e.g., Python, common libraries). Refer to the main PyTorch [CONTRIBUTING.md](CONTRIBUTING.md) for detailed setup.
+
+**1. Clone the Repository:**
+```bash
+git clone <repository_url> # Replace <repository_url> with the URL of this fork
+cd pytorch
+```
+
+**2. Configure CMake with C API enabled:**
+Create a build directory and run CMake from within it.
+```bash
+mkdir build
+cd build
+cmake -DBUILD_C_API=ON ..
+```
+*   On Windows, you might need to specify a generator, e.g., `-G "Visual Studio 17 2022"`.
+
+**3. Build PyTorch and the C Bindings:**
+```bash
+cmake --build . --config Release --target torch_c
+```
+*   You can also build all targets: `cmake --build . --config Release`
+*   The `--config Release` is common; adjust as needed (e.g., `Debug`).
+*   This will produce `libtorch_c.so` (Linux), `libtorch_c.dylib` (macOS), or `torch_c.dll` and `torch_c.lib` (Windows) in the build output directory (typically `build/lib`). The C header `torch.h` will be available in `build/include/torch/c/torch.h` or from the source tree at `torch/csrc/api/c/include/torch/c/torch.h`.
+
+**4. Compile and Run the Basic C Test:**
+A basic test case `test_basic.c` is located in `torch/csrc/api/c/test/`.
+
+**Linux (from the `build` directory):**
+```bash
+gcc -I../torch/csrc/api/c/include -L./lib ../torch/csrc/api/c/test/test_basic.c -Wl,-rpath,./lib -ltorch_c -o test_basic
+./test_basic
+```
+*   `LD_LIBRARY_PATH=./lib ./test_basic` might be needed if rpath is not set or not working.
+
+**macOS (from the `build` directory):**
+```bash
+clang -I../torch/csrc/api/c/include -L./lib ../torch/csrc/api/c/test/test_basic.c -Wl,-rpath,./lib -ltorch_c -o test_basic
+./test_basic
+```
+*   `DYLD_LIBRARY_PATH=./lib ./test_basic` might be needed.
+
+**Windows (from the `build` directory, using MSVC from a Developer Command Prompt):**
+Ensure `torch_c.dll` and other required PyTorch DLLs (like `torch.dll`, `c10.dll`) are in your PATH or in the same directory as `test_basic.exe`. They are typically found in `build\lib\`.
+```bat
+cl /I..\torch\csrc\api\c\include /I.\include ..\torch\csrc\api\c\test\test_basic.c /link /LIBPATH:.\lib torch_c.lib /OUT:test_basic.exe
+# Copy DLLs if not in PATH
+xcopy /Y .\lib\torch_c.dll .
+xcopy /Y .\lib\torch.dll .
+xcopy /Y .\lib\c10.dll .
+# Add any other PyTorch core DLLs that test_basic.exe might depend on via torch_c.dll
+
+.\test_basic.exe
+```
+
+---
+(Original README content follows)
+
 ![PyTorch Logo](https://github.com/pytorch/pytorch/raw/main/docs/source/_static/img/pytorch-logo-dark.png)
 
 --------------------------------------------------------------------------------
