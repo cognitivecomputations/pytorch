@@ -1,0 +1,6 @@
+output_directory: "generated_bindings"
+bindings_header_name: "custom_torch_bindings.h"
+bindings_source_name: "custom_torch_bindings.cpp"
+functions:
+  - "aten::add.Tensor"
+  - "aten::relu"
