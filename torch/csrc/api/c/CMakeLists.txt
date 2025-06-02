@@ -41,4 +41,6 @@ install(EXPORT TorchCConfig
 )
 
 # Add test subdirectory
-add_subdirectory(test)
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/test/CMakeLists.txt)
+    add_subdirectory(test)
+endif()

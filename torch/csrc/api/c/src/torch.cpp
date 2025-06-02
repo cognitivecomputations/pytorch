@@ -1,22 +1,40 @@
 #include <torch/c/torch.h>
 #include <torch/torch.h>
-#include <ATen/cuda/CUDAContext.h> // For at::cuda::is_available() and at::cuda::device_count()
-#include <c10/version.h> // For C10_BUILD_VERSION
 
-// Function to get the number of CUDA devices
-int torch_cuda_device_count() {
-    if (at::cuda::is_available()) {
-        return at::cuda::device_count();
-    }
+#ifdef USE_CUDA
+#include <ATen/cuda/CUDAContext.h> // For at::cuda::is_available() and at::cuda::device_count()
+#endif
+
+std::string last_error;
+
+int torch_cuda_device_count(void) {
+  try {
+#ifdef USE_CUDA
+    return torch::cuda::device_count();
+#else
+    return 0;  // No CUDA devices on macOS
+#endif
+  } catch (const std::exception& e) {
+    last_error = e.what();
     return 0;
+  }
 }
 
 // Function to get the PyTorch version
 const char* torch_version() {
-    return C10_BUILD_VERSION.str;
+    return "2.0+";
+
 }
 
-// Function to check if CUDA is available
-int torch_cuda_is_available() {
-    return at::cuda::is_available();
+int torch_cuda_is_available(void) {
+  try {
+#ifdef USE_CUDA
+    return torch::cuda::is_available() ? 1 : 0;
+#else
+    return 0;  // No CUDA on macOS
+#endif
+  } catch (const std::exception& e) {
+    last_error = e.what();
+    return 0;
+  }
 }
